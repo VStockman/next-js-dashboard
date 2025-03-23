@@ -1,3 +1,5 @@
+'use server';
+
 import bcrypt from 'bcryptjs';
 import { CreateUserSchema } from '../models/schemas';
 import { User, UsersTableType, UserState } from '../models/types';
