@@ -1,6 +1,6 @@
+import { deleteCustomer } from '@/app/lib/services/customers';
 import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { deleteCustomer } from '@/app/lib/actions';
 
 export function CreateCustomer() {
   return (

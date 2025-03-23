@@ -7,9 +7,9 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
-import { updateCustomer } from '@/app/lib/actions';
 import { useActionState } from 'react';
 import { CustomerForm, CustomerState } from '@/app/lib/models/types';
+import { updateCustomer } from '@/app/lib/services/customers';
 
 export default function EditInvoiceForm({
   customer,

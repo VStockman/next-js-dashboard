@@ -1,4 +1,4 @@
-import { fetchFilteredUsers } from '@/app/lib/data';
+import { getFilteredUsers } from '@/app/lib/services/users';
 
 export default async function CustomersTable({
   query,
@@ -7,7 +7,7 @@ export default async function CustomersTable({
   query: string;
   currentPage: number;
 }) {
-  const users = await fetchFilteredUsers(query, currentPage);
+  const users = await getFilteredUsers(query, currentPage);
   return (
     <div className='w-full'>
       <div className='mt-6 flow-root'>

@@ -3,8 +3,8 @@ import Search from '@/app/ui/search';
 import Table from '@/app/ui/users/table';
 import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from 'react';
-import { fetchUsersPages } from '@/app/lib/data';
 import { Metadata } from 'next';
+import { getUsersPages } from '@/app/lib/services/users';
 
 export const metadata: Metadata = {
   title: 'Users',
@@ -19,7 +19,7 @@ export default async function Page(props: {
   const searchParams = await props.searchParams;
   const query = searchParams?.query || '';
   const currentPage = Number(searchParams?.page) || 1;
-  const totalPages = await fetchUsersPages(query);
+  const totalPages = await getUsersPages(query);
 
   return (
     <div className='w-full'>

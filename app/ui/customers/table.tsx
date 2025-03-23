@@ -1,6 +1,6 @@
 import Image from 'next/image';
-import { fetchFilteredCustomers } from '@/app/lib/data';
 import { DeleteCustomer, UpdateCustomer } from './buttons';
+import { getFilteredCustomers } from '@/app/lib/services/customers';
 
 export default async function CustomersTable({
   query,
@@ -9,7 +9,7 @@ export default async function CustomersTable({
   query: string;
   currentPage: number;
 }) {
-  const customers = await fetchFilteredCustomers(query, currentPage);
+  const customers = await getFilteredCustomers(query, currentPage);
   return (
     <div className='w-full'>
       <div className='mt-6 flow-root'>

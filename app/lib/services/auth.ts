@@ -1,20 +1,27 @@
-import NextAuth from 'next-auth';
+'use server';
+import { authConfig } from '@/auth.config';
+import NextAuth, { AuthError } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { authConfig } from './auth.config';
 import { z } from 'zod';
-import type { User } from '@/app/lib/models/types';
+import { getUserByEmail } from './users';
 import bcrypt from 'bcryptjs';
-import postgres from 'postgres';
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
-
-export async function getUser(email: string): Promise<User | undefined> {
+export async function authenticate(
+  prevState: string | undefined,
+  formData: FormData
+) {
   try {
-    const user = await sql<User[]>`SELECT * FROM users WHERE email=${email}`;
-    return user[0];
+    await signIn('credentials', formData);
   } catch (error) {
-    console.error('Failed to fetch user:', error);
-    throw new Error('Failed to fetch user.');
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return 'Invalid credentials.';
+        default:
+          return 'Something went wrong.';
+      }
+    }
+    throw error;
   }
 }
 
@@ -29,7 +36,7 @@ export const { auth, signIn, signOut } = NextAuth({
 
         if (parsedCredentials.success) {
           const { email, password } = parsedCredentials.data;
-          const user = await getUser(email);
+          const user = await getUserByEmail(email);
           if (!user) return null;
 
           const passwordsMatch = await bcrypt.compare(password, user.password);

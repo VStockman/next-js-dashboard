@@ -4,8 +4,8 @@ import Table from '@/app/ui/customers/table';
 import { CreateCustomer } from '@/app/ui/customers/buttons';
 import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from 'react';
-import { fetchCustomersPages } from '@/app/lib/data';
 import { Metadata } from 'next';
+import { getCustomersPages } from '@/app/lib/services/customers';
 
 export const metadata: Metadata = {
   title: 'Customers',
@@ -20,7 +20,7 @@ export default async function Page(props: {
   const searchParams = await props.searchParams;
   const query = searchParams?.query || '';
   const currentPage = Number(searchParams?.page) || 1;
-  const totalPages = await fetchCustomersPages(query);
+  const totalPages = await getCustomersPages(query);
 
   return (
     <div className='w-full'>
