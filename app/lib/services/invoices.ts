@@ -1,3 +1,5 @@
+'use server';
+
 import { CreateInvoiceSchema, UpdateInvoiceSchema } from '../models/schemas';
 import {
   InvoiceForm,

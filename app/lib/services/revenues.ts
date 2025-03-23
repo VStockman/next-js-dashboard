@@ -1,3 +1,5 @@
+'use server';
+
 import { Revenue } from '../models/types';
 import { sql } from '../shared';
 

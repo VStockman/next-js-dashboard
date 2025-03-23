@@ -1,4 +1,5 @@
 'use server';
+
 import { authConfig } from '@/auth.config';
 import NextAuth, { AuthError } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
