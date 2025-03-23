@@ -4,7 +4,7 @@ import { z } from 'zod';
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { signIn } from '@/auth';
+import { getUser, signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 import bcrypt from 'bcryptjs';
 
@@ -13,7 +13,7 @@ const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 const UserSchema = z.object({
   id: z.string(),
   name: z.string().min(1, {
-    message: 'Please enter a first name and a last name.',
+    message: 'Please enter your full name.',
   }),
   email: z.string().email({
     message: 'Please enter a valid email address.',
@@ -40,7 +40,7 @@ const InvoiceSchema = z.object({
 const CustomerSchema = z.object({
   id: z.string(),
   name: z.string().min(1, {
-    message: 'Please enter a first name and a last name.',
+    message: 'Please enter your full name.',
   }),
   email: z.string().email({
     message: 'Please enter a valid email address.',
@@ -200,13 +200,22 @@ export async function createUser(prevState: UserState, formData: FormData) {
   }
   const { name, email, password } = validatedFields.data;
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const user = await getUser(email);
+
+  if (user) {
+    return {
+      message: 'User already exists.',
+    };
+  }
+
   try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     await sql`
       INSERT INTO users (name, email, password)
       VALUES (${name}, ${email}, ${hashedPassword})
     `;
-    return { message: 'User Created.' };
+    return { user };
   } catch (error) {
     console.error(error);
     return {
