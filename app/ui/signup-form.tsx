@@ -9,8 +9,9 @@ import {
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from '@/app/ui/button';
 import { useActionState } from 'react';
-import { createUser, UserState } from '@/app/lib/actions';
+import { createUser } from '@/app/lib/actions';
 import { useSearchParams } from 'next/navigation';
+import { UserState } from '../lib/types';
 
 export default function SignUpForm() {
   const searchParams = useSearchParams();

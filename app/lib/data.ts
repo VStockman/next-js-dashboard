@@ -8,7 +8,7 @@ import {
   Revenue,
   CustomerForm,
   UsersTableType,
-} from './definitions';
+} from './types';
 import { formatCurrency } from './utils';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });

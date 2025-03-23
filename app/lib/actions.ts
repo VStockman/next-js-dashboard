@@ -1,93 +1,27 @@
 'use server';
 
-import { z } from 'zod';
 import postgres from 'postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getUser, signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 import bcrypt from 'bcryptjs';
-import { User } from './definitions';
+import {
+  CreateCustomerSchema,
+  CreateInvoiceSchema,
+  CreateUserSchema,
+  UpdateCustomerSchema,
+  UpdateInvoiceSchema,
+} from './schemas';
+import { CustomerState, InvoiceState, UserState } from './types';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
-
-const UserSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, {
-    message: 'Please enter your full name.',
-  }),
-  email: z.string().email({
-    message: 'Please enter a valid email address.',
-  }),
-  password: z
-    .string()
-    .min(6, { message: 'Please enter a password with at least 6 characters.' }),
-});
-
-const InvoiceSchema = z.object({
-  id: z.string(),
-  customerId: z.string({
-    invalid_type_error: 'Please select a customer.',
-  }),
-  amount: z.coerce
-    .number()
-    .gt(0, { message: 'Please enter an amount greater than $0.' }),
-  status: z.enum(['pending', 'paid'], {
-    invalid_type_error: 'Please select an invoice status.',
-  }),
-  date: z.string(),
-});
-
-const CustomerSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, {
-    message: 'Please enter your full name.',
-  }),
-  email: z.string().email({
-    message: 'Please enter a valid email address.',
-  }),
-  imageUrl: z.string().url({
-    message: 'Please enter a valid url.',
-  }),
-});
-
-export type UserState = {
-  errors?: {
-    name?: string[];
-    email?: string[];
-    password?: string[];
-  };
-  message?: string | null;
-  user?: User;
-};
-
-export type InvoiceState = {
-  errors?: {
-    customerId?: string[];
-    amount?: string[];
-    status?: string[];
-  };
-  message?: string | null;
-};
-
-export type CustomerState = {
-  errors?: {
-    name?: string[];
-    email?: string[];
-    imageUrl?: string[];
-  };
-  message?: string | null;
-};
-
-const CreateInvoice = InvoiceSchema.omit({ id: true, date: true });
-const CreateCustomer = CustomerSchema.omit({ id: true });
-const CreateUser = UserSchema.omit({ id: true });
 
 export async function createInvoice(
   prevState: InvoiceState,
   formData: FormData
 ) {
-  const validatedFields = CreateInvoice.safeParse({
+  const validatedFields = CreateInvoiceSchema.safeParse({
     customerId: formData.get('customerId'),
     amount: formData.get('amount'),
     status: formData.get('status'),
@@ -120,15 +54,12 @@ export async function createInvoice(
   redirect('/dashboard/invoices');
 }
 
-const UpdateInvoice = InvoiceSchema.omit({ id: true, date: true });
-const UpdateCustomer = CustomerSchema.omit({ id: true });
-
 export async function updateInvoice(
   id: string,
   prevState: InvoiceState,
   formData: FormData
 ) {
-  const validatedFields = UpdateInvoice.safeParse({
+  const validatedFields = UpdateInvoiceSchema.safeParse({
     customerId: formData.get('customerId'),
     amount: formData.get('amount'),
     status: formData.get('status'),
@@ -188,7 +119,7 @@ export async function authenticate(
 }
 
 export async function createUser(prevState: UserState, formData: FormData) {
-  const validatedFields = CreateUser.safeParse({
+  const validatedFields = CreateUserSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
     name: formData.get('name'),
@@ -239,7 +170,7 @@ export async function createCustomer(
   prevState: CustomerState,
   formData: FormData
 ) {
-  const validatedFields = CreateCustomer.safeParse({
+  const validatedFields = CreateCustomerSchema.safeParse({
     name: formData.get('name'),
     email: formData.get('email'),
     imageUrl: formData.get('imageUrl'),
@@ -275,7 +206,7 @@ export async function updateCustomer(
   prevState: CustomerState,
   formData: FormData
 ) {
-  const validatedFields = UpdateCustomer.safeParse({
+  const validatedFields = UpdateCustomerSchema.safeParse({
     name: formData.get('name'),
     email: formData.get('email'),
     imageUrl: formData.get('imageUrl'),
