@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation';
 import { getUser, signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 import bcrypt from 'bcryptjs';
+import { User } from './definitions';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
@@ -57,6 +58,7 @@ export type UserState = {
     password?: string[];
   };
   message?: string | null;
+  user?: User;
 };
 
 export type InvoiceState = {
