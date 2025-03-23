@@ -7,6 +7,7 @@ import {
   LatestInvoiceRaw,
   Revenue,
   CustomerForm,
+  UsersTableType,
 } from './definitions';
 import { formatCurrency } from './utils';
 
@@ -249,5 +250,47 @@ export async function fetchCustomersPages(query: string) {
   } catch (err) {
     console.error('Database Error:', err);
     throw new Error('Failed to fetch customer table.');
+  }
+}
+
+export async function fetchUsersPages(query: string) {
+  try {
+    const data = await sql`
+		SELECT COUNT(*)
+    FROM users
+    WHERE
+      users.name ILIKE ${`%${query}%`} OR
+      users.email ILIKE ${`%${query}%`}
+	  `;
+    const totalPages = Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch user table.');
+  }
+}
+
+export async function fetchFilteredUsers(query: string, currentPage: number) {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
+    const data = await sql<UsersTableType[]>`
+	SELECT
+		  users.id,
+		  users.name,
+		  users.email
+		FROM users
+		WHERE
+		  users.name ILIKE ${`%${query}%`} OR
+        users.email ILIKE ${`%${query}%`}
+		GROUP BY users.id, users.name, users.email
+		ORDER BY users.name ASC
+    LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+	  `;
+
+    return data;
+  } catch (err) {
+    console.error('Database Error:', err);
+    throw new Error('Failed to fetch user table.');
   }
 }

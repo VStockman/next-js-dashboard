@@ -65,6 +65,12 @@ export type CustomersTableType = {
   total_paid: number;
 };
 
+export type UsersTableType = {
+  id: string;
+  name: string;
+  email: string;
+};
+
 export type FormattedCustomersTable = {
   id: string;
   name: string;

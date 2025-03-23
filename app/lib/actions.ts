@@ -6,8 +6,22 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
+import bcrypt from 'bcryptjs';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+
+const UserSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, {
+    message: 'Please enter a first name and a last name.',
+  }),
+  email: z.string().email({
+    message: 'Please enter a valid email address.',
+  }),
+  password: z
+    .string()
+    .min(6, { message: 'Please enter a password with at least 6 characters.' }),
+});
 
 const InvoiceSchema = z.object({
   id: z.string(),
@@ -36,6 +50,15 @@ const CustomerSchema = z.object({
   }),
 });
 
+export type UserState = {
+  errors?: {
+    name?: string[];
+    email?: string[];
+    password?: string[];
+  };
+  message?: string | null;
+};
+
 export type InvoiceState = {
   errors?: {
     customerId?: string[];
@@ -56,6 +79,7 @@ export type CustomerState = {
 
 const CreateInvoice = InvoiceSchema.omit({ id: true, date: true });
 const CreateCustomer = CustomerSchema.omit({ id: true });
+const CreateUser = UserSchema.omit({ id: true });
 
 export async function createInvoice(
   prevState: InvoiceState,
@@ -158,6 +182,36 @@ export async function authenticate(
       }
     }
     throw error;
+  }
+}
+
+export async function createUser(prevState: UserState, formData: FormData) {
+  const validatedFields = CreateUser.safeParse({
+    email: formData.get('email'),
+    password: formData.get('password'),
+    name: formData.get('name'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create User.',
+    };
+  }
+  const { name, email, password } = validatedFields.data;
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  try {
+    await sql`
+      INSERT INTO users (name, email, password)
+      VALUES (${name}, ${email}, ${hashedPassword})
+    `;
+    return { message: 'User Created.' };
+  } catch (error) {
+    console.error(error);
+    return {
+      message: 'Database Error: Failed to Create User.',
+    };
   }
 }
 
