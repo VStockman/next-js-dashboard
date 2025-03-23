@@ -9,7 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
 import { createCustomer } from '@/app/lib/actions';
-import { CustomerState } from '@/app/lib/types';
+import { CustomerState } from '@/app/lib/models/types';
 
 export default function Form() {
   const initialState: CustomerState = { message: null, errors: {} };

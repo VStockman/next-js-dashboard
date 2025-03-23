@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
-import { CustomerField, InvoiceState } from '@/app/lib/types';
+import { CustomerField, InvoiceState } from '@/app/lib/models/types';
 import Link from 'next/link';
 import {
   CheckIcon,

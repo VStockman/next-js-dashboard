@@ -12,8 +12,8 @@ import {
   CreateUserSchema,
   UpdateCustomerSchema,
   UpdateInvoiceSchema,
-} from './schemas';
-import { CustomerState, InvoiceState, UserState } from './types';
+} from './models/schemas';
+import { CustomerState, InvoiceState, UserState } from './models/types';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 

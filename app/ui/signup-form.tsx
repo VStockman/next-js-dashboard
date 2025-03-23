@@ -11,7 +11,7 @@ import { Button } from '@/app/ui/button';
 import { useActionState } from 'react';
 import { createUser } from '@/app/lib/actions';
 import { useSearchParams } from 'next/navigation';
-import { UserState } from '../lib/types';
+import { UserState } from '../lib/models/types';
 
 export default function SignUpForm() {
   const searchParams = useSearchParams();
