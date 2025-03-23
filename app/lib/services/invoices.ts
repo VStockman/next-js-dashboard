@@ -9,8 +9,11 @@ import {
 } from '../models/types';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { ITEMS_PER_PAGE, sql } from '../shared';
 import { formatCurrency } from '../utils';
+import { ITEMS_PER_PAGE } from '../constants';
+import postgres from 'postgres';
+
+const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 export async function getLatestInvoices() {
   try {

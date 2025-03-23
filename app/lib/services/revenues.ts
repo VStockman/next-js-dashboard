@@ -1,7 +1,9 @@
 'use server';
 
+import postgres from 'postgres';
 import { Revenue } from '../models/types';
-import { sql } from '../shared';
+
+const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 export async function getRevenue() {
   try {

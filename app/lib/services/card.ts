@@ -1,7 +1,9 @@
 'use server';
 
-import { sql } from '../shared';
+import postgres from 'postgres';
 import { formatCurrency } from '../utils';
+
+const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 export async function getCardData() {
   try {

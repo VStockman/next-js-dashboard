@@ -1,7 +1,10 @@
 import bcrypt from 'bcryptjs';
 import { CreateUserSchema } from '../models/schemas';
 import { User, UsersTableType, UserState } from '../models/types';
-import { ITEMS_PER_PAGE, sql } from '../shared';
+import { ITEMS_PER_PAGE } from '../constants';
+import postgres from 'postgres';
+
+const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 export async function getUsersPages(query: string) {
   try {

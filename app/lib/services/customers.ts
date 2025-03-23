@@ -9,8 +9,11 @@ import {
   CustomerState,
 } from '../models/types';
 import { CreateCustomerSchema, UpdateCustomerSchema } from '../models/schemas';
-import { ITEMS_PER_PAGE, sql } from '../shared';
 import { formatCurrency } from '../utils';
+import { ITEMS_PER_PAGE } from '../constants';
+import postgres from 'postgres';
+
+const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 export async function getCustomers() {
   try {
