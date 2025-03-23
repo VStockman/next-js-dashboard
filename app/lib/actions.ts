@@ -9,7 +9,7 @@ import { AuthError } from 'next-auth';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
-const FormSchema = z.object({
+const InvoiceSchema = z.object({
   id: z.string(),
   customerId: z.string({
     invalid_type_error: 'Please select a customer.',
@@ -23,7 +23,20 @@ const FormSchema = z.object({
   date: z.string(),
 });
 
-export type State = {
+const CustomerSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, {
+    message: 'Please enter a first name and a last name.',
+  }),
+  email: z.string().email({
+    message: 'Please enter a valid email address.',
+  }),
+  imageUrl: z.string().url({
+    message: 'Please enter a valid url.',
+  }),
+});
+
+export type InvoiceState = {
   errors?: {
     customerId?: string[];
     amount?: string[];
@@ -31,10 +44,20 @@ export type State = {
   };
   message?: string | null;
 };
- 
-const CreateInvoice = FormSchema.omit({ id: true, date: true });
 
-export async function createInvoice(prevState: State, formData: FormData) {
+export type CustomerState =  {
+  errors?: {
+    name?: string[];
+    email?: string[];
+    imageUrl?: string[];
+  };
+  message?: string | null;
+};
+ 
+const CreateInvoice = InvoiceSchema.omit({ id: true, date: true });
+const CreateCustomer = CustomerSchema.omit({ id: true });
+
+export async function createInvoice(prevState: InvoiceState, formData: FormData) {
   const validatedFields = CreateInvoice.safeParse({
     customerId: formData.get('customerId'),
     amount: formData.get('amount'),
@@ -68,11 +91,12 @@ export async function createInvoice(prevState: State, formData: FormData) {
   redirect('/dashboard/invoices');
 }
 
-const UpdateInvoice = FormSchema.omit({ id: true, date: true });
+const UpdateInvoice = InvoiceSchema.omit({ id: true, date: true });
+const UpdateCustomer = CustomerSchema.omit({ id: true});
 
 export async function updateInvoice(
   id: string,
-  prevState: State,
+  prevState: InvoiceState,
   formData: FormData,
 ) {
   const validatedFields = UpdateInvoice.safeParse({
@@ -132,4 +156,80 @@ export async function authenticate(
     }
     throw error;
   }
+}
+
+export async function deleteCustomer(id: string) {
+  try {
+  await sql`DELETE FROM customers WHERE id = ${id}`;
+} catch(e) {
+  console.error(e);
+} 
+  revalidatePath('/dashboard/customers');
+}
+
+export async function createCustomer(prevState: CustomerState, formData: FormData) {
+  const validatedFields = CreateCustomer.safeParse({
+    name: formData.get('name'),
+    email: formData.get('email'),
+    imageUrl: formData.get('imageUrl'),
+  });
+ 
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Customer.',
+    };
+  }
+ 
+  const { name, email, imageUrl } = validatedFields.data;
+ 
+  try {
+    await sql`
+      INSERT INTO customers (name, email, image_url)
+      VALUES (${name}, ${email}, ${imageUrl})
+    `;
+  } catch (error) {
+    console.error(error);
+    return {
+      message: 'Database Error: Failed to Create Customer.',
+    };
+  }
+ 
+  revalidatePath('/dashboard/customers');
+  redirect('/dashboard/customers');
+}
+
+export async function updateCustomer(
+  id: string,
+  prevState: CustomerState,
+  formData: FormData,
+) {
+  const validatedFields = UpdateCustomer.safeParse({
+    name: formData.get('name'),
+    email: formData.get('email'),
+    imageUrl: formData.get('imageUrl'),
+  });
+ 
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Update Customer.',
+    };
+  }
+ 
+  const { name, email, imageUrl } = validatedFields.data;
+ 
+  try {
+    await sql`
+      UPDATE customers
+      SET name = ${name}, email = ${email}, image_url = ${imageUrl}
+      WHERE id = ${id}
+    `;
+  } catch (error) {
+    console.error(error);
+    return { message: 'Database Error: Failed to Update Customer.' };
+  }
+ 
+  revalidatePath('/dashboard/customers');
+  redirect('/dashboard/customers');
 }
